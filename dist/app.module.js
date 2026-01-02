@@ -15,6 +15,12 @@ const app_service_1 = require("./app.service");
 const config_2 = require("./common/config");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
+const game_net_module_1 = require("./game-net/game-net.module");
+const devices_module_1 = require("./devices/devices.module");
+const customers_module_1 = require("./customers/customers.module");
+const products_module_1 = require("./products/products.module");
+const game_sessions_module_1 = require("./game-sessions/game-sessions.module");
+const transactions_module_1 = require("./transactions/transactions.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -27,6 +33,12 @@ exports.AppModule = AppModule = __decorate([
             typeorm_1.TypeOrmModule.forRoot((0, config_2.databaseConfig)()),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
+            game_net_module_1.GameNetModule,
+            devices_module_1.DevicesModule,
+            customers_module_1.CustomersModule,
+            products_module_1.ProductsModule,
+            game_sessions_module_1.GameSessionsModule,
+            transactions_module_1.TransactionsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

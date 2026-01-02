@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.Role = void 0;
 const typeorm_1 = require("typeorm");
+const game_net_entity_1 = require("../../game-net/entities/game-net.entity");
 var Role;
 (function (Role) {
     Role["SUPER_ADMIN"] = "SUPER_ADMIN";
@@ -25,6 +26,7 @@ let User = class User {
     password;
     role;
     gameNetId;
+    gameNet;
     createdAt;
 };
 exports.User = User;
@@ -56,6 +58,11 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], User.prototype, "gameNetId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => game_net_entity_1.GameNet, (gameNet) => gameNet.users, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.JoinColumn)({ name: 'gameNetId' }),
+    __metadata("design:type", game_net_entity_1.GameNet)
+], User.prototype, "gameNet", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

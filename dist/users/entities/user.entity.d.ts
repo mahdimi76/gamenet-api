@@ -1,3 +1,4 @@
+import { GameNet } from '../../game-net/entities/game-net.entity';
 export declare enum Role {
     SUPER_ADMIN = "SUPER_ADMIN",
     ADMIN = "ADMIN",
@@ -11,5 +12,6 @@ export declare class User {
     password: string;
     role: Role;
     gameNetId: string;
+    gameNet: GameNet;
     createdAt: Date;
 }

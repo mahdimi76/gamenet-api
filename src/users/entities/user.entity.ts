@@ -6,6 +6,7 @@ import {
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
+import { GameNet } from '../../game-net/entities/game-net.entity';
 
 export enum Role {
     SUPER_ADMIN = 'SUPER_ADMIN',
@@ -35,6 +36,10 @@ export class User {
 
     @Column({ nullable: true })
     gameNetId: string;
+
+    @ManyToOne(() => GameNet, (gameNet) => gameNet.users, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'gameNetId' })
+    gameNet: GameNet;
 
     @CreateDateColumn()
     createdAt: Date;

@@ -12,6 +12,7 @@ export declare class AuthService {
         phoneNumber: string;
         role: import("../users/entities/user.entity").Role;
         gameNetId: string;
+        gameNet: import("../game-net/entities/game-net.entity").GameNet;
         createdAt: Date;
     } | null>;
     login(loginDto: LoginDto): Promise<{
@@ -22,6 +23,7 @@ export declare class AuthService {
             phoneNumber: string;
             role: import("../users/entities/user.entity").Role;
             gameNetId: string;
+            gameNet: import("../game-net/entities/game-net.entity").GameNet;
             createdAt: Date;
         };
         access_token: string;
@@ -33,6 +35,7 @@ export declare class AuthService {
         phoneNumber: string;
         role: import("../users/entities/user.entity").Role;
         gameNetId: string;
+        gameNet: import("../game-net/entities/game-net.entity").GameNet;
         createdAt: Date;
     } | null>;
 }

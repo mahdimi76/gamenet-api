@@ -14,6 +14,7 @@ export declare class AuthController {
             phoneNumber: string;
             role: import("../users/entities/user.entity").Role;
             gameNetId: string;
+            gameNet: import("../game-net/entities/game-net.entity").GameNet;
             createdAt: Date;
         };
         access_token: string;
@@ -25,6 +26,7 @@ export declare class AuthController {
         phoneNumber: string;
         role: import("../users/entities/user.entity").Role;
         gameNetId: string;
+        gameNet: import("../game-net/entities/game-net.entity").GameNet;
         createdAt: Date;
     }>;
     getProfile(userId: string): Promise<{
@@ -34,6 +36,7 @@ export declare class AuthController {
         phoneNumber: string;
         role: import("../users/entities/user.entity").Role;
         gameNetId: string;
+        gameNet: import("../game-net/entities/game-net.entity").GameNet;
         createdAt: Date;
     } | null>;
 }
