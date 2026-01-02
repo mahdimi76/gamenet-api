@@ -14,6 +14,10 @@ import { CustomersModule } from './customers/customers.module';
 import { ProductsModule } from './products/products.module';
 import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { OrdersModule } from './orders/orders.module';
+import { SettingsModule } from './settings/settings.module';
+import { ServicesModule } from './services/services.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -32,6 +36,10 @@ import { TransactionsModule } from './transactions/transactions.module';
     ProductsModule,
     GameSessionsModule,
     TransactionsModule,
+    OrdersModule,
+    SettingsModule,
+    ServicesModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

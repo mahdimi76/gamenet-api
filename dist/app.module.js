@@ -21,6 +21,10 @@ const customers_module_1 = require("./customers/customers.module");
 const products_module_1 = require("./products/products.module");
 const game_sessions_module_1 = require("./game-sessions/game-sessions.module");
 const transactions_module_1 = require("./transactions/transactions.module");
+const orders_module_1 = require("./orders/orders.module");
+const settings_module_1 = require("./settings/settings.module");
+const services_module_1 = require("./services/services.module");
+const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -39,6 +43,10 @@ exports.AppModule = AppModule = __decorate([
             products_module_1.ProductsModule,
             game_sessions_module_1.GameSessionsModule,
             transactions_module_1.TransactionsModule,
+            orders_module_1.OrdersModule,
+            settings_module_1.SettingsModule,
+            services_module_1.ServicesModule,
+            subscriptions_module_1.SubscriptionsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
