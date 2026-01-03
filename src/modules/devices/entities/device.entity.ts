@@ -31,7 +31,7 @@ export class Device {
     status: string; // AVAILABLE, BUSY, MAINTENANCE
 
     @Column({ nullable: true })
-    startTime: Date;
+    startTime: Date | null;
 
     @Column()
     gameNetId: string;

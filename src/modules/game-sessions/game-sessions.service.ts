@@ -7,6 +7,8 @@ import { PaySessionDto } from './dto/pay-session.dto';
 import { Transaction, TransactionType } from '../transactions/entities/transaction.entity';
 import { Customer } from '../customers/entities/customer.entity';
 
+import { Device } from '../devices/entities/device.entity';
+
 @Injectable()
 export class GameSessionsService {
     constructor(
@@ -16,9 +18,19 @@ export class GameSessionsService {
         private transactionsRepository: Repository<Transaction>,
         @InjectRepository(Customer)
         private customersRepository: Repository<Customer>,
+        @InjectRepository(Device)
+        private devicesRepository: Repository<Device>,
     ) { }
 
     async create(createSessionDto: CreateSessionDto): Promise<GameSession> {
+        // آپدیت وضعیت دستگاه به BUSY (اگر دستگاه مشخص باشد)
+        if (createSessionDto.deviceId) {
+            await this.devicesRepository.update(createSessionDto.deviceId, {
+                status: 'BUSY',
+                startTime: new Date()
+            });
+        }
+
         const session = this.sessionsRepository.create(createSessionDto);
         return this.sessionsRepository.save(session);
     }
@@ -110,6 +122,12 @@ export class GameSessionsService {
             totalPrice,
             status: 'COMPLETED',
             isPaid: false,
+        });
+
+        // آزاد کردن دستگاه
+        await this.devicesRepository.update(session.deviceId, {
+            status: 'AVAILABLE',
+            startTime: null
         });
 
         return {
