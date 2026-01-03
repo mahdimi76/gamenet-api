@@ -39,17 +39,19 @@ export class DevicesService {
         return this.devicesRepository.findOne({ where: { id } });
     }
 
-    async update(id: string, updateDeviceDto: UpdateDeviceDto): Promise<Device | null> {
-        await this.devicesRepository.update(id, updateDeviceDto);
+    async update(id: string, updateDeviceDto: UpdateDeviceDto, gameNetId: string): Promise<Device | null> {
+        const result = await this.devicesRepository.update({ id, gameNetId }, updateDeviceDto);
+        if (result.affected === 0) return null;
         return this.findOne(id);
     }
 
-    async updateStatus(id: string, status: string, startTime?: Date): Promise<Device | null> {
-        await this.devicesRepository.update(id, { status, startTime });
+    async updateStatus(id: string, status: string, gameNetId: string, startTime?: Date): Promise<Device | null> {
+        const result = await this.devicesRepository.update({ id, gameNetId }, { status, startTime });
+        if (result.affected === 0) return null;
         return this.findOne(id);
     }
 
-    async remove(id: string): Promise<void> {
-        await this.devicesRepository.delete(id);
+    async remove(id: string, gameNetId: string): Promise<void> {
+        await this.devicesRepository.delete({ id, gameNetId });
     }
 }

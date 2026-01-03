@@ -64,19 +64,22 @@ export class GameSessionsService {
         });
     }
 
-    async update(id: string, updateSessionDto: UpdateSessionDto): Promise<GameSession | null> {
+    async update(id: string, updateSessionDto: UpdateSessionDto, gameNetId: string): Promise<GameSession | null> {
+        const session = await this.sessionsRepository.findOne({ where: { id, gameNetId } });
+        if (!session) return null;
         await this.sessionsRepository.update(id, updateSessionDto);
         return this.findOne(id);
     }
 
-    async endSession(id: string, endSessionDto: EndSessionDto): Promise<any> {
-        // دریافت session با تمام relations
+    async endSession(id: string, endSessionDto: EndSessionDto, gameNetId: string): Promise<any> {
+        // دریافت session با تمام relations و چک کردن gameNetId
         const session = await this.sessionsRepository.findOne({
-            where: { id },
+            where: { id, gameNetId },
             relations: ['device', 'customer', 'orders', 'orders.items', 'services', 'services.service'],
         });
 
         if (!session || !session.device) {
+            // اگر پیدا نشد یا مال این گیم‌نت نبود
             return null;
         }
 
@@ -147,8 +150,8 @@ export class GameSessionsService {
         };
     }
 
-    async paySession(id: string, payDto: PaySessionDto, userId: string): Promise<any> {
-        const session = await this.sessionsRepository.findOne({ where: { id }, relations: ['customer'] });
+    async paySession(id: string, payDto: PaySessionDto, userId: string, gameNetId: string): Promise<any> {
+        const session = await this.sessionsRepository.findOne({ where: { id, gameNetId }, relations: ['customer'] });
         if (!session) throw new NotFoundException('نشست یافت نشد');
 
         if (session.isPaid) throw new BadRequestException('این نشست قبلاً پرداخت شده است');

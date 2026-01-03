@@ -41,18 +41,18 @@ export class GameSessionsController {
     }
 
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateSessionDto: UpdateSessionDto) {
-        return this.gameSessionsService.update(id, updateSessionDto);
+    update(@Param('id') id: string, @Body() updateSessionDto: UpdateSessionDto, @CurrentUser('gameNetId') gameNetId: string) {
+        return this.gameSessionsService.update(id, updateSessionDto, gameNetId);
     }
 
     @Patch(':id/end')
-    endSession(@Param('id') id: string, @Body() endSessionDto: EndSessionDto) {
-        return this.gameSessionsService.endSession(id, endSessionDto);
+    endSession(@Param('id') id: string, @Body() endSessionDto: EndSessionDto, @CurrentUser('gameNetId') gameNetId: string) {
+        return this.gameSessionsService.endSession(id, endSessionDto, gameNetId);
     }
 
     @Auth()
     @Patch(':id/payment')
-    paySession(@Param('id') id: string, @Body() payDto: PaySessionDto, @CurrentUser('id') userId: string) {
-        return this.gameSessionsService.paySession(id, payDto, userId);
+    paySession(@Param('id') id: string, @Body() payDto: PaySessionDto, @CurrentUser('id') userId: string, @CurrentUser('gameNetId') gameNetId: string) {
+        return this.gameSessionsService.paySession(id, payDto, userId, gameNetId);
     }
 }
