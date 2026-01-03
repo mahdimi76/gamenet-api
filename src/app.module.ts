@@ -3,21 +3,21 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { databaseConfig } from './common/config';
+import { databaseConfig } from './config';
 
 // ماژول‌های اپلیکیشن
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { GameNetModule } from './game-net/game-net.module';
-import { DevicesModule } from './devices/devices.module';
-import { CustomersModule } from './customers/customers.module';
-import { ProductsModule } from './products/products.module';
-import { GameSessionsModule } from './game-sessions/game-sessions.module';
-import { TransactionsModule } from './transactions/transactions.module';
-import { OrdersModule } from './orders/orders.module';
-import { SettingsModule } from './settings/settings.module';
-import { ServicesModule } from './services/services.module';
-import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { GameNetModule } from './modules/game-net/game-net.module';
+import { DevicesModule } from './modules/devices/devices.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { ProductsModule } from './modules/products/products.module';
+import { GameSessionsModule } from './modules/game-sessions/game-sessions.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { ServicesModule } from './modules/services/services.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -44,4 +44,4 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
