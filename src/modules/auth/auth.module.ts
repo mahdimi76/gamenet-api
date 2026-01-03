@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -15,9 +16,13 @@ import { User } from '../users/entities/user.entity';
         UsersModule,
         PassportModule,
         TypeOrmModule.forFeature([GameNet, User]),
-        JwtModule.register({
-            secret: jwtConfig().secret,
-            signOptions: { expiresIn: jwtConfig().expiresIn },
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                secret: jwtConfig().secret,
+                signOptions: { expiresIn: jwtConfig().expiresIn },
+            }),
         }),
     ],
     controllers: [AuthController],
