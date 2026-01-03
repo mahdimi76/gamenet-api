@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -27,8 +27,32 @@ import { BackupModule } from './modules/backup/backup.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // اتصال به دیتابیس با TypeORM
-    TypeOrmModule.forRoot(typeOrmConfig()),
+    // اتصال به دیتابیس با TypeORM به صورت Async
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const host = configService.get<string>('DB_HOST') || 'localhost';
+        const port = configService.get<number>('DB_PORT') || 3306;
+        const username = configService.get<string>('DB_USERNAME') || 'root';
+        const password = configService.get<string>('DB_PASSWORD') || '';
+        const database = configService.get<string>('DB_DATABASE') || 'gamenet_db';
+
+        console.log('🔌 Attempting to connect to DB with:', { host, port, username, database, passwordLength: password.length });
+
+        return {
+          type: 'mysql',
+          host,
+          port,
+          username,
+          password,
+          database,
+          entities: [__dirname + '/modules/**/*.entity{.ts,.js}'],
+          synchronize: true,
+          logging: false,
+        };
+      },
+    }),
     // ماژول‌های اپلیکیشن
     AuthModule,
     UsersModule,

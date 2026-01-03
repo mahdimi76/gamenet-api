@@ -30,7 +30,7 @@ export class Device {
     @Column({ default: 'AVAILABLE' })
     status: string; // AVAILABLE, BUSY, MAINTENANCE
 
-    @Column({ nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     startTime: Date | null;
 
     @Column()
