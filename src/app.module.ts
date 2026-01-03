@@ -18,6 +18,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ServicesModule } from './modules/services/services.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -40,8 +41,9 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
     SettingsModule,
     ServicesModule,
     SubscriptionsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

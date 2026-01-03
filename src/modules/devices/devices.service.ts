@@ -21,7 +21,16 @@ export class DevicesService {
     }
 
     async findByGameNet(gameNetId: string): Promise<Device[]> {
-        return this.devicesRepository.find({ where: { gameNetId } });
+        // برگرداندن دستگاه‌ها با session های فعال و خدمات ثبت شده
+        return this.devicesRepository
+            .createQueryBuilder('device')
+            .leftJoinAndSelect('device.sessions', 'session', 'session.status = :status', { status: 'ACTIVE' })
+            .leftJoinAndSelect('session.services', 'sessionService')
+            .leftJoinAndSelect('sessionService.service', 'service')
+            .leftJoinAndSelect('session.customer', 'customer')
+            .where('device.gameNetId = :gameNetId', { gameNetId })
+            .orderBy('device.createdAt', 'ASC')
+            .getMany();
     }
 
     async findOne(id: string): Promise<Device | null> {

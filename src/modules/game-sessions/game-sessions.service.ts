@@ -50,13 +50,76 @@ export class GameSessionsService {
         return this.findOne(id);
     }
 
-    async endSession(id: string, endSessionDto: EndSessionDto): Promise<GameSession | null> {
-        await this.sessionsRepository.update(id, {
-            ...endSessionDto,
-            status: 'COMPLETED',
-            endTime: new Date(),
+    async endSession(id: string, endSessionDto: EndSessionDto): Promise<any> {
+        // دریافت session با تمام relations
+        const session = await this.sessionsRepository.findOne({
+            where: { id },
+            relations: ['device', 'customer', 'orders', 'orders.items', 'services', 'services.service'],
         });
-        return this.findOne(id);
+
+        if (!session || !session.device) {
+            return null;
+        }
+
+        const endTime = new Date();
+        const startTime = new Date(session.startTime);
+        const durationMs = endTime.getTime() - startTime.getTime();
+        const durationMinutes = Math.ceil(durationMs / 60000);
+
+        // محاسبه قیمت بازی
+        const hourlyRate = session.device.hourlyRate || 0;
+        const basePrice = (durationMinutes / 60) * hourlyRate;
+        const extraControllers = session.extraControllers || 0;
+        const extraRate = session.device.extraRate || 0;
+        const extraPrice = (durationMinutes / 60) * extraRate * extraControllers;
+        const gamePrice = Math.ceil(basePrice + extraPrice);
+
+        // محاسبه قیمت بوفه
+        let buffetPrice = 0;
+        if (session.orders) {
+            session.orders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        buffetPrice += item.totalPrice || 0;
+                    });
+                }
+            });
+        }
+
+        // محاسبه قیمت خدمات
+        let servicesPrice = 0;
+        if (session.services) {
+            session.services.forEach(s => {
+                servicesPrice += (s.quantity || 1) * (s.service?.price || 0);
+            });
+        }
+
+        const totalPrice = gamePrice + buffetPrice + servicesPrice;
+
+        // آپدیت session
+        await this.sessionsRepository.update(id, {
+            endTime,
+            durationMinutes,
+            totalPrice,
+            status: 'COMPLETED',
+            isPaid: false,
+        });
+
+        return {
+            success: true,
+            data: {
+                id: session.id,
+                deviceName: session.device.name,
+                duration: durationMinutes,
+                gamePrice,
+                buffetPrice,
+                servicesPrice,
+                totalPrice,
+                startTime: session.startTime,
+                endTime,
+                customer: session.customer,
+            }
+        };
     }
 
     async getUnpaidSessions(gameNetId: string): Promise<GameSession[]> {

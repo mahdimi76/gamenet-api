@@ -4,12 +4,15 @@ import {
     Column,
     CreateDateColumn,
     ManyToOne,
+    OneToMany,
     JoinColumn,
 } from 'typeorm';
 import { GameNet } from '../../game-net/entities/game-net.entity';
 import { Device } from '../../devices/entities/device.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { User } from '../../users/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { SessionService } from '../../services/entities/service.entity';
 
 export enum PaymentMethod {
     CASH = 'CASH',
@@ -83,4 +86,11 @@ export class GameSession {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    // Relations
+    @OneToMany(() => Order, order => order.gameSession)
+    orders: Order[];
+
+    @OneToMany(() => SessionService, ss => ss.session)
+    services: SessionService[];
 }
