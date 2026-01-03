@@ -27,6 +27,8 @@ export class DevicesService {
             .leftJoinAndSelect('device.sessions', 'session', 'session.status = :status', { status: 'ACTIVE' })
             .leftJoinAndSelect('session.services', 'sessionService')
             .leftJoinAndSelect('sessionService.service', 'service')
+            .leftJoinAndSelect('session.orders', 'order')
+            .leftJoinAndSelect('order.items', 'orderItem')
             .leftJoinAndSelect('session.customer', 'customer')
             .where('device.gameNetId = :gameNetId', { gameNetId })
             .orderBy('device.createdAt', 'ASC')

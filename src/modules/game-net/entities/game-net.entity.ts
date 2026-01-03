@@ -30,6 +30,6 @@ export class GameNet {
     updatedAt: Date;
 
     // Relations
-    @OneToMany(() => User, (user) => user.gameNet)
+    @OneToMany(() => User, (user) => user.gameNet, { cascade: ['insert'] })
     users: User[];
 }

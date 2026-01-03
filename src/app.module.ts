@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { databaseConfig } from './config';
+import { typeOrmConfig } from './config/typeorm.config';
 
 // ماژول‌های اپلیکیشن
 import { AuthModule } from './modules/auth/auth.module';
@@ -19,6 +19,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ServicesModule } from './modules/services/services.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { BackupModule } from './modules/backup/backup.module';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
       isGlobal: true,
     }),
     // اتصال به دیتابیس با TypeORM
-    TypeOrmModule.forRoot(databaseConfig()),
+    TypeOrmModule.forRoot(typeOrmConfig()),
     // ماژول‌های اپلیکیشن
     AuthModule,
     UsersModule,
@@ -42,8 +43,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ServicesModule,
     SubscriptionsModule,
     DashboardModule,
+    BackupModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule { }

@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GameSession } from './entities/game-session.entity';
 import { CreateSessionDto, EndSessionDto, UpdateSessionDto } from './dto/session.dto';
+import { PaySessionDto } from './dto/pay-session.dto';
+import { Transaction, TransactionType } from '../transactions/entities/transaction.entity';
+import { Customer } from '../customers/entities/customer.entity';
 
 @Injectable()
 export class GameSessionsService {
     constructor(
         @InjectRepository(GameSession)
         private sessionsRepository: Repository<GameSession>,
+        @InjectRepository(Transaction)
+        private transactionsRepository: Repository<Transaction>,
+        @InjectRepository(Customer)
+        private customersRepository: Repository<Customer>,
     ) { }
 
     async create(createSessionDto: CreateSessionDto): Promise<GameSession> {
@@ -120,6 +127,55 @@ export class GameSessionsService {
                 customer: session.customer,
             }
         };
+    }
+
+    async paySession(id: string, payDto: PaySessionDto, userId: string): Promise<any> {
+        const session = await this.sessionsRepository.findOne({ where: { id }, relations: ['customer'] });
+        if (!session) throw new NotFoundException('نشست یافت نشد');
+
+        if (session.isPaid) throw new BadRequestException('این نشست قبلاً پرداخت شده است');
+
+        const amount = Number(session.totalPrice);
+
+        // اگر پرداخت از کیف پول است
+        if (payDto.method === 'WALLET') {
+            if (!session.customer) throw new BadRequestException('مشتری برای پرداخت کیف پول مشخص نیست');
+            if (Number(session.customer.balance) < amount) throw new BadRequestException('موجودی کیف پول کافی نیست');
+
+            // کسر موجودی
+            session.customer.balance = Number(session.customer.balance) - amount;
+            // آپدیت آمار مشتری
+            session.customer.totalSpent = Number(session.customer.totalSpent || 0) + amount;
+            session.customer.totalMinutes = Number(session.customer.totalMinutes || 0) + (session.durationMinutes || 0);
+
+            await this.customersRepository.save(session.customer);
+        } else if (session.customer) {
+            // پرداخت نقدی ولی مشتری دارد -> آپدیت آمار مشتری
+            session.customer.totalSpent = Number(session.customer.totalSpent || 0) + amount;
+            session.customer.totalMinutes = Number(session.customer.totalMinutes || 0) + (session.durationMinutes || 0);
+            await this.customersRepository.save(session.customer);
+        }
+
+        // ثبت تراکنش مالی (برای همه روش‌ها ثبت می‌کنیم تا آمار دقیق باشد)
+        if (payDto.isPaid) {
+            const transaction = this.transactionsRepository.create({
+                gameNetId: session.gameNetId,
+                customerId: session.customerId, // اگر باشد
+                amount: amount,
+                type: TransactionType.USAGE,
+                method: payDto.method,
+                description: `تسویه بازی (دستگاه ${session.deviceId})`,
+                registeredById: userId
+            });
+            await this.transactionsRepository.save(transaction);
+        }
+
+        // آپدیت وضعیت نشست
+        session.isPaid = payDto.isPaid;
+        session.paymentMethod = payDto.method;
+        await this.sessionsRepository.save(session);
+
+        return { success: true };
     }
 
     async getUnpaidSessions(gameNetId: string): Promise<GameSession[]> {

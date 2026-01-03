@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { hashPassword, comparePassword } from '../../common/utils';
+import { Role } from '../../common/enums/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -48,5 +49,27 @@ export class UsersService {
 
     async remove(id: string): Promise<void> {
         await this.usersRepository.delete(id);
+    }
+
+    // Staff Management Methods
+    async findStaffByGameNet(gameNetId: string): Promise<User[]> {
+        return this.usersRepository.find({
+            where: {
+                gameNetId,
+                role: Role.STAFF
+            },
+            order: { createdAt: 'DESC' }
+        });
+    }
+
+    async createStaff(createUserDto: CreateUserDto, gameNetId: string): Promise<User> {
+        const hashedPassword = await hashPassword(createUserDto.password);
+        const user = this.usersRepository.create({
+            ...createUserDto,
+            password: hashedPassword,
+            role: Role.STAFF,
+            gameNetId,
+        });
+        return this.usersRepository.save(user);
     }
 }

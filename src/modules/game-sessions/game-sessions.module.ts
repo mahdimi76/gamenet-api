@@ -4,8 +4,11 @@ import { GameSessionsService } from './game-sessions.service';
 import { GameSessionsController } from './game-sessions.controller';
 import { GameSession } from './entities/game-session.entity';
 
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { Customer } from '../customers/entities/customer.entity';
+
 @Module({
-    imports: [TypeOrmModule.forFeature([GameSession])],
+    imports: [TypeOrmModule.forFeature([GameSession, Transaction, Customer])],
     controllers: [GameSessionsController],
     providers: [GameSessionsService],
     exports: [GameSessionsService],

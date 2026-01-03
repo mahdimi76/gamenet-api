@@ -7,12 +7,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { GameNet } from '../../game-net/entities/game-net.entity';
-
-export enum Role {
-    SUPER_ADMIN = 'SUPER_ADMIN',
-    ADMIN = 'ADMIN',
-    STAFF = 'STAFF',
-}
+import { Role } from '../../../common/enums/role.enum';
 
 @Entity('users')
 export class User {

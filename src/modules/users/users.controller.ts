@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Auth, CurrentUser } from '../../common';
@@ -28,5 +28,28 @@ export class UsersController {
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.usersService.remove(id);
+    }
+
+    // Staff Endpoints
+    @Auth()
+    @Get('staff/list')
+    getStaff(@Query('gameNetId') gameNetId: string) {
+        return this.usersService.findStaffByGameNet(gameNetId);
+    }
+
+    @Auth()
+    @Post('staff')
+    createStaff(
+        @Body() createUserDto: CreateUserDto,
+        @Query('gameNetId') gameNetId: string,
+    ) {
+        return this.usersService.createStaff(createUserDto, gameNetId);
+    }
+
+
+    @Auth()
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() body: any) {
+        return this.usersService.update(id, body);
     }
 }

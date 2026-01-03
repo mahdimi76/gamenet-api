@@ -48,6 +48,15 @@ export class Order {
     @OneToMany(() => OrderItem, (item) => item.order)
     items: OrderItem[];
 
+    @Column({ default: false })
+    isPaid: boolean;
+
+    @Column({ nullable: true })
+    paymentMethod: string;
+
+    @Column({ type: 'decimal', precision: 10, scale: 0, default: 0 })
+    totalPrice: number;
+
     @CreateDateColumn()
     createdAt: Date;
 }

@@ -5,12 +5,16 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
-import { jwtConfig } from '../../config';
+import { jwtConfig } from '../../config/jwt.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { GameNet } from '../game-net/entities/game-net.entity';
+import { User } from '../users/entities/user.entity';
 
 @Module({
     imports: [
         UsersModule,
         PassportModule,
+        TypeOrmModule.forFeature([GameNet, User]),
         JwtModule.register({
             secret: jwtConfig().secret,
             signOptions: { expiresIn: jwtConfig().expiresIn },
