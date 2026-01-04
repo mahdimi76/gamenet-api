@@ -3,12 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Customer } from './entities/customer.entity';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { UpdateBalanceDto } from './dto/balance.dto';
 
 @Injectable()
 export class CustomersService {
     constructor(
         @InjectRepository(Customer)
         private customersRepository: Repository<Customer>,
+        @InjectRepository(Transaction)
+        private transactionsRepository: Repository<Transaction>,
     ) { }
 
     async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
@@ -42,11 +46,36 @@ export class CustomersService {
         return this.findOne(id);
     }
 
-    async updateBalance(id: string, amount: number): Promise<Customer | null> {
+    async updateBalance(id: string, updateBalanceDto: UpdateBalanceDto): Promise<Customer | null> {
         const customer = await this.findOne(id);
         if (customer) {
-            customer.balance += amount;
-            return this.customersRepository.save(customer);
+            // آپدیت موجودی مشتری
+            if (updateBalanceDto.type === 'DEPOSIT') {
+                customer.balance = Number(customer.balance) + updateBalanceDto.amount;
+            } else {
+                customer.balance = Number(customer.balance) - updateBalanceDto.amount;
+            }
+
+            // اگر از نوع استفاده (خرید) باشد، مجموع خرید را هم اضافه کن
+            if (updateBalanceDto.type === 'USAGE') {
+                customer.totalSpent = Number(customer.totalSpent || 0) + updateBalanceDto.amount;
+            }
+
+            const savedCustomer = await this.customersRepository.save(customer);
+
+            // ثبت تراکنش
+            const transaction = this.transactionsRepository.create({
+                gameNetId: customer.gameNetId,
+                customerId: customer.id,
+                amount: updateBalanceDto.amount,
+                type: updateBalanceDto.type,
+                method: updateBalanceDto.method,
+                description: updateBalanceDto.description || (updateBalanceDto.type === 'DEPOSIT' ? 'شارژ دستی کیف پول' : 'کسر دستی از کیف پول'),
+                registeredById: updateBalanceDto.registeredById,
+            } as any);
+            await this.transactionsRepository.save(transaction);
+
+            return savedCustomer;
         }
         return null;
     }

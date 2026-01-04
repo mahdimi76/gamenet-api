@@ -26,8 +26,11 @@ export class UsersController {
 
     @Auth()
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(id);
+    remove(
+        @Param('id') id: string,
+        @CurrentUser('gameNetId') adminGameNetId: string,
+    ) {
+        return this.usersService.remove(id, adminGameNetId);
     }
 
     // Staff Endpoints

@@ -47,7 +47,16 @@ export class UsersService {
         return this.findOne(id);
     }
 
-    async remove(id: string): Promise<void> {
+    async remove(id: string, adminGameNetId: string): Promise<void> {
+        const user = await this.findOne(id);
+        if (!user) {
+            throw new Error('کاربر یافت نشد');
+        }
+
+        if (user.gameNetId !== adminGameNetId) {
+            throw new Error('شما دسترسی حذف این کاربر را ندارید');
+        }
+
         await this.usersRepository.delete(id);
     }
 
