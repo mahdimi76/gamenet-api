@@ -9,6 +9,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { GameNet } from '../../game-net/entities/game-net.entity';
+import { GameSession } from '../../game-sessions/entities/game-session.entity';
 
 @Entity('devices')
 export class Device {
@@ -45,4 +46,7 @@ export class Device {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => GameSession, session => session.device)
+    sessions: GameSession[];
 }
