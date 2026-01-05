@@ -52,6 +52,6 @@ export class DevicesService {
     }
 
     async remove(id: string, gameNetId: string): Promise<void> {
-        await this.devicesRepository.delete({ id, gameNetId });
+        await this.devicesRepository.softDelete({ id, gameNetId });
     }
 }

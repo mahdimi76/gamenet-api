@@ -4,6 +4,7 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    DeleteDateColumn,
     ManyToOne,
     OneToMany,
     JoinColumn,
@@ -46,6 +47,9 @@ export class Device {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date;
 
     @OneToMany(() => GameSession, session => session.device)
     sessions: GameSession[];
