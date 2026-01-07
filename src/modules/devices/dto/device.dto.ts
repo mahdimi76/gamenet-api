@@ -17,6 +17,9 @@ export class CreateDeviceDto {
 
     @IsString()
     gameNetId: string;
+
+    @IsOptional()
+    config?: any;
 }
 
 export class UpdateDeviceDto {
@@ -39,4 +42,7 @@ export class UpdateDeviceDto {
     @IsString()
     @IsOptional()
     status?: string;
+
+    @IsOptional()
+    config?: any;
 }

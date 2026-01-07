@@ -27,6 +27,10 @@ export class CreateSessionDto {
     @IsNumber()
     @IsOptional()
     limitMinutes?: number;
+
+    @IsString()
+    @IsOptional()
+    pricingVariant?: string;
 }
 
 export class EndSessionDto {

@@ -38,6 +38,16 @@ export class Device {
     @Column()
     gameNetId: string;
 
+    @Column({ type: 'json', nullable: true })
+    config: {
+        ipAddress?: string;
+        consoleModel?: string;
+        // Pricing Variants: { "1": 20000, "2": 30000, "ONLINE": 25000 ... }
+        pricingVariants?: Record<string, number>;
+        // Dynamic Rules: [{ start: "23:00", end: "08:00", factor: 1.5, ... }]
+        dynamicRules?: any[];
+    };
+
     @ManyToOne(() => GameNet, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'gameNetId' })
     gameNet: GameNet;

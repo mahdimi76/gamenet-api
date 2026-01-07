@@ -88,13 +88,96 @@ export class GameSessionsService {
         const durationMs = endTime.getTime() - startTime.getTime();
         const durationMinutes = Math.ceil(durationMs / 60000);
 
-        // محاسبه قیمت بازی
-        const hourlyRate = session.device.hourlyRate || 0;
-        const basePrice = (durationMinutes / 60) * hourlyRate;
-        const extraControllers = session.extraControllers || 0;
-        const extraRate = session.device.extraRate || 0;
-        const extraPrice = (durationMinutes / 60) * extraRate * extraControllers;
-        const gamePrice = Math.ceil(basePrice + extraPrice);
+        // محاسبه قیمت بازی با منطق پیشرفته
+        const deviceConfig = session.device.config;
+        const pricingVariant = session.pricingVariant; // e.g., "1", "2", "ONLINE"
+        const playerCount = session.extraControllers + 1;
+
+        // 1. تعیین نرخ پایه (Base Rate)
+        let hourlyRate = session.device.hourlyRate || 0;
+
+        // اگر تنظیمات پیشرفته وجود داشت
+        if (deviceConfig && deviceConfig.pricingVariants) {
+            // اگر variant مشخص شده (مثلاً از فرانت آمده)، اولویت با آن است
+            if (pricingVariant && deviceConfig.pricingVariants[pricingVariant]) {
+                hourlyRate = Number(deviceConfig.pricingVariants[pricingVariant]);
+            }
+            // اگر variant نبود (سیستم قدیم)، سعی کن بر اساس تعداد نفرات پیدا کنی
+            else if (deviceConfig.pricingVariants[playerCount.toString()]) {
+                hourlyRate = Number(deviceConfig.pricingVariants[playerCount.toString()]);
+            }
+            // حالت PC Offline/Online (اگر variant نباشد سیستم قدیم ممکن است به مشکل بخورد پس بهتر است variant همیشه باشد)
+        }
+
+        // 2. محاسبه دقیق با برش زمانی (Time Slicing)
+        let calculatedGamePrice = 0;
+        let current = new Date(startTime.getTime());
+        const end = new Date(endTime.getTime());
+
+        const dynamicRules = deviceConfig?.dynamicRules || [];
+
+        // اگر قانون پویایی وجود نداشت، محاسبه ساده
+        if (dynamicRules.length === 0) {
+            calculatedGamePrice = (durationMinutes / 60) * hourlyRate;
+        } else {
+            // محاسبه دقیقه به دقیقه
+            while (current < end) {
+                const currentHour = current.getHours();
+                const currentMinute = current.getMinutes();
+                const currentDay = (current.getDay() + 1) % 7; // تبدیل 0..6 (یکشنبه..شنبه) به 0..6 (شنبه..جمعه) برای هماهنگی با فرانت
+                // JS: 0=Sun, 1=Mon, ..., 6=Sat
+                // Target: 0=Sat, 1=Sun, ..., 6=Fri
+                // Formula: (Day + 1) % 7. 
+                // Sat(6) -> 7%7=0. Sun(0) -> 1. Correct. 
+
+                const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+
+                let minuteRate = hourlyRate / 60; // نرخ پیش‌فرض این دقیقه
+
+                // بررسی تطابق با قوانین پویا
+                for (const rule of dynamicRules) {
+                    // چک کردن روز (اگر آرایه روزها تعریف شده باشد)
+                    const dayMatch = !rule.days || rule.days.length === 0 || rule.days.includes(currentDay);
+
+                    if (dayMatch && this.isTimeInRange(currentTimeStr, rule.start, rule.end)) {
+                        // اگر قانون منطبق شد، باید نرخ را از داخل قانون پیدا کنیم
+                        if (rule.pricingVariants) {
+                            // دقیقاً مشابه نرخ پایه، باید نرخ مناسب را از اینجا برداریم
+                            if (pricingVariant && rule.pricingVariants[pricingVariant]) {
+                                minuteRate = Number(rule.pricingVariants[pricingVariant]) / 60;
+                            } else if (rule.pricingVariants[playerCount.toString()]) {
+                                minuteRate = Number(rule.pricingVariants[playerCount.toString()]) / 60;
+                            } else if (rule.rate) {
+                                // Backward compatibility / Simple rate
+                                minuteRate = Number(rule.rate) / 60;
+                            }
+                        } else if (rule.rate) {
+                            minuteRate = Number(rule.rate) / 60;
+                        }
+                        break; // اولویت با اولین قانون منطبق
+                    }
+                }
+
+                calculatedGamePrice += minuteRate;
+                current.setMinutes(current.getMinutes() + 1);
+            }
+        }
+
+        // قیمت نهایی
+        // در سیستم جدید، اگر pricingVariants وجود داشته باشد، قیمت شامل همه چیز است.
+        // فقط اگر هیچ کانفیگی نبود (حالت ساده قدیمی)، فرمول extraRate اعمال می‌شود.
+
+        let finalGamePrice = Math.ceil(calculatedGamePrice);
+
+        if ((!deviceConfig || !deviceConfig.pricingVariants) && !pricingVariant) {
+            // اگر سیستم سنتی بود و هیچ کانفیگی نداشتیم
+            const basePrice = (durationMinutes / 60) * (session.device.hourlyRate || 0);
+            const extraRate = session.device.extraRate || 0;
+            const extraPrice = (durationMinutes / 60) * extraRate * (session.extraControllers || 0);
+            finalGamePrice = Math.ceil(basePrice + extraPrice);
+        }
+
+        const gamePrice = finalGamePrice;
 
         // محاسبه قیمت بوفه
         let buffetPrice = 0;
@@ -204,5 +287,15 @@ export class GameSessionsService {
             where: { gameNetId, isPaid: false, status: 'COMPLETED' },
             relations: ['customer', 'device'],
         });
+    }
+
+    private isTimeInRange(current: string, start: string, end: string): boolean {
+        // فرمت: "23:00", "08:00"
+        if (start <= end) {
+            return current >= start && current < end;
+        } else {
+            // حالت عبور از نیمه شب (مثلاً 23:00 تا 02:00)
+            return current >= start || current < end;
+        }
     }
 }

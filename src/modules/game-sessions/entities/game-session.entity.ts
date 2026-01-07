@@ -78,6 +78,9 @@ export class GameSession {
     @Column({ type: 'enum', enum: PaymentMethod, nullable: true })
     paymentMethod: PaymentMethod;
 
+    @Column({ nullable: true })
+    pricingVariant: string;
+
     @Column({ default: 0 })
     extraControllers: number;
 
