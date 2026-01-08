@@ -24,7 +24,9 @@ export class DevicesService {
         // برگرداندن دستگاه‌ها با session های فعال و خدمات ثبت شده
         return this.devicesRepository
             .createQueryBuilder('device')
+            .addSelect('device.config') // Force select config
             .leftJoinAndSelect('device.sessions', 'session', 'session.status = :status', { status: 'ACTIVE' })
+            .addSelect('session.pricingVariant') // Force select pricingVariant
             .leftJoinAndSelect('session.services', 'sessionService')
             .leftJoinAndSelect('sessionService.service', 'service')
             .leftJoinAndSelect('session.orders', 'order')

@@ -18,26 +18,48 @@ export class AuthService {
     ) { }
 
     async validateUser(identifier: string, password: string) {
+        console.log('🔍 [DEBUG] validateUser called with identifier:', identifier);
+
         // جستجو با ایمیل یا شماره تلفن
         let user = await this.usersService.findByEmail(identifier);
+        console.log('🔍 [DEBUG] findByEmail result:', user ? `Found user: ${user.email}` : 'Not found');
+
         if (!user) {
             user = await this.usersService.findByPhoneNumber(identifier);
+            console.log('🔍 [DEBUG] findByPhoneNumber result:', user ? `Found user: ${user.phoneNumber}` : 'Not found');
         }
 
         if (!user || !user.password) {
+            console.log('❌ [DEBUG] User not found or no password set');
             return null;
         }
+
+        console.log('🔍 [DEBUG] User found. Password in DB starts with:', user.password.substring(0, 20) + '...');
+        console.log('🔍 [DEBUG] Password length in DB:', user.password.length);
+        console.log('🔍 [DEBUG] Input password:', password);
 
         const isPasswordValid = await this.usersService.validatePassword(
             password,
             user.password,
         );
 
+        console.log('🔍 [DEBUG] Password validation result:', isPasswordValid);
+
         if (isPasswordValid) {
+            // اگر رمز bcrypt نبود، به bcrypt ارتقا بده
+            const isBcrypt = user.password.startsWith('$2') && user.password.length === 60;
+            if (!isBcrypt) {
+                console.log('🔄 [DEBUG] Upgrading password to bcrypt...');
+                const newHashedPassword = await hashPassword(password);
+                await this.usersService.update(user.id, { password: newHashedPassword });
+                console.log('✅ [DEBUG] Password upgraded to bcrypt successfully');
+            }
+
             const { password: _, ...result } = user;
             return result;
         }
 
+        console.log('❌ [DEBUG] Password validation FAILED');
         return null;
     }
 
