@@ -76,13 +76,15 @@ export class DashboardService {
             },
         });
 
-        // نشست‌های فعال
-        const activeSessions = await this.sessionsRepository.count({
+        // مجموع شارژ کیف پول امروز
+        const todayDeposits = await this.transactionsRepository.find({
             where: {
                 gameNetId,
-                status: 'ACTIVE',
+                type: TransactionType.DEPOSIT,
+                createdAt: Between(todayStart, todayEnd),
             },
         });
+        const todayWalletCharge = todayDeposits.reduce((sum, t) => sum + Number(t.amount), 0);
 
         // آخرین تراکنش‌ها
         const recentTransactions = await this.transactionsRepository.find({
@@ -129,8 +131,8 @@ export class DashboardService {
             customers: {
                 newThisMonth: newCustomers,
             },
-            sessions: {
-                active: activeSessions,
+            walletCharge: {
+                today: todayWalletCharge,
             },
             recentTransactions: recentTransactions.map(t => ({
                 id: t.id,
